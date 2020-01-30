@@ -1,6 +1,8 @@
 export interface DragScrollOptions {
-    getScrollPosition: (param: { scrollContainer: HTMLElement, direction: number[] }) => number[];
-    scrollThreshold: number;
+    container: HTMLElement;
+    threshold: number;
+    getScrollPosition: (param: { container: HTMLElement, direction: number[] }) => number[];
+
 }
 export interface Rect {
     left: number;

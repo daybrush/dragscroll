@@ -1,39 +1,30 @@
 import Component from "@egjs/component";
 import { DragScrollOptions, Rect } from "./types";
 
-function getDefaultScrollPosition(e: { scrollContainer: HTMLElement, direction: number[] }) {
-    const scrollContainer = e.scrollContainer;
+function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
+    const container = e.container;
 
     return [
-        scrollContainer.scrollLeft,
-        scrollContainer.scrollTop,
+        container.scrollLeft,
+        container.scrollTop,
     ];
 }
 
 export default class DragScroll extends Component {
-    public options: DragScrollOptions;
     private startRect: Rect | null = null;
     private prevDirection: number[] | null = null;
     private prevPos: number[] = [];
-    constructor(private container: HTMLElement, options: Partial<DragScrollOptions> = {}) {
-        super();
-        this.options = {
-            scrollThreshold: 0,
-            getScrollPosition: getDefaultScrollPosition,
-            ...options,
-        };
-    }
-    public dragStart() {
+    public dragStart(container: HTMLElement) {
         const {
             top,
             left,
             width,
             height,
-        } = this.container.getBoundingClientRect();
+        } = container.getBoundingClientRect();
 
         this.startRect = { top, left, width, height };
     }
-    public drag(e: any) {
+    public drag(e: any, options: DragScrollOptions) {
         const {
             clientX,
             clientY,
@@ -41,24 +32,24 @@ export default class DragScroll extends Component {
         this.prevDirection = null;
 
         const {
-            scrollThreshold = 0,
-            getScrollPosition = getDefaultScrollPosition,
-        } = this.options;
-        const {
             container,
+            threshold = 0,
+            getScrollPosition = getDefaultScrollPosition,
+        } = options;
+        const {
             startRect,
         } = this;
 
         const direction = [0, 0];
 
-        if (startRect.top > clientY - scrollThreshold) {
+        if (startRect.top > clientY - threshold) {
             direction[1] = -1;
-        } else if (startRect.top + startRect.height < clientY + scrollThreshold) {
+        } else if (startRect.top + startRect.height < clientY + threshold) {
             direction[1] = 1;
         }
-        if (startRect.left > clientX - scrollThreshold) {
+        if (startRect.left > clientX - threshold) {
             direction[0] = -1;
-        } else if (startRect.left + startRect.width < clientX + scrollThreshold) {
+        } else if (startRect.left + startRect.width < clientX + threshold) {
             direction[0] = 1;
         }
         if (!direction[0] && !direction[1]) {
@@ -66,29 +57,29 @@ export default class DragScroll extends Component {
         }
 
         this.prevDirection = direction;
-        this.prevPos = getScrollPosition({ scrollContainer: container, direction });
+        this.prevPos = getScrollPosition({ container, direction });
 
         this.trigger("scroll", {
-            scrollContainer: container,
+            container,
             direction,
         });
         return true;
 
     }
-    public dragAfter() {
+    public dragAfter(options: DragScrollOptions) {
         const {
             prevPos,
             prevDirection: direction,
-            container: scrollContainer,
         } = this;
 
         if (!this.prevDirection) {
             return false;
         }
         const {
+            container,
             getScrollPosition = getDefaultScrollPosition,
-        } = this.options;
-        const nextPos = getScrollPosition({ scrollContainer, direction });
+        } = options;
+        const nextPos = getScrollPosition({ container, direction });
         const offsetX = nextPos[0] - prevPos[0];
         const offsetY = nextPos[1] - prevPos[1];
 
