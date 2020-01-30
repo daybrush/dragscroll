@@ -62,11 +62,12 @@ export default class DragScroll extends Component {
         this.trigger("scroll", {
             container,
             direction,
+            inputEvent: e.inputEvent,
         });
         return true;
 
     }
-    public dragAfter(options: DragScrollOptions) {
+    public dragAfter(e: any, options: DragScrollOptions) {
         const {
             prevPos,
             prevDirection: direction,
@@ -89,6 +90,7 @@ export default class DragScroll extends Component {
         this.trigger("move", {
             offsetX: direction[0] ? offsetX : 0,
             offsetY: direction[1] ? offsetY : 0,
+            inputEvent: e.inputEvent,
         });
         return true;
     }
