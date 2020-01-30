@@ -1,4 +1,5 @@
 import Component from "@egjs/component";
+import { now } from "@daybrush/utils";
 import { DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
@@ -12,9 +13,9 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
 
 export default class DragScroll extends Component {
     private startRect: Rect | null = null;
-    private prevDirection: number[] | null = null;
     private startPos: number[] = [];
-    private prevPos: number[] = [];
+    private prevTime: number = 0;
+    private timer: number = 0;
     public dragStart(e: any, options: DragScrollOptions) {
         const {
             top,
@@ -31,17 +32,18 @@ export default class DragScroll extends Component {
             clientX,
             clientY,
         } = e;
-        this.prevDirection = null;
-
         const {
             container,
             threshold = 0,
+            throttle = 0,
             getScrollPosition = getDefaultScrollPosition,
         } = options;
         const {
             startRect,
             startPos,
         } = this;
+        const nowTime = now();
+        const distTime = Math.max(throttle + this.prevTime - nowTime, 0);
 
         const direction = [0, 0];
 
@@ -63,34 +65,27 @@ export default class DragScroll extends Component {
                 direction[0] = 1;
             }
         }
+        clearTimeout(this.timer);
+
         if (!direction[0] && !direction[1]) {
             return false;
         }
+        if (distTime > 0) {
+            this.timer = window.setTimeout(() => {
+                this.drag(e, options);
+            }, distTime);
 
-        this.prevDirection = direction;
-        this.prevPos = getScrollPosition({ container, direction });
+            return false;
+        }
+        this.prevTime = nowTime;
+        const prevPos = getScrollPosition({ container, direction });
 
         this.trigger("scroll", {
             container,
             direction,
             inputEvent: e,
         });
-        return true;
 
-    }
-    public dragAfter(e: any, options: DragScrollOptions) {
-        const {
-            prevPos,
-            prevDirection: direction,
-        } = this;
-
-        if (!this.prevDirection) {
-            return false;
-        }
-        const {
-            container,
-            getScrollPosition = getDefaultScrollPosition,
-        } = options;
         const nextPos = getScrollPosition({ container, direction });
         const offsetX = nextPos[0] - prevPos[0];
         const offsetY = nextPos[1] - prevPos[1];
@@ -103,6 +98,15 @@ export default class DragScroll extends Component {
             offsetY: direction[1] ? offsetY : 0,
             inputEvent: e,
         });
+
+        if (throttle) {
+            this.timer = window.setTimeout(() => {
+                this.drag(e, options);
+            }, throttle);
+        }
         return true;
+    }
+    public dragEnd() {
+        clearTimeout(this.timer);
     }
 }
