@@ -13,8 +13,6 @@ function getDefaultScrollPosition(e: { scrollContainer: HTMLElement, direction: 
 export default class DragScroll extends Component {
     public options: DragScrollOptions;
     private startRect: Rect | null = null;
-    private prevClientX = 0;
-    private prevClientY = 0;
     private prevDirection: number[] | null = null;
     private prevPos: number[] = [];
     constructor(private container: HTMLElement, options: Partial<DragScrollOptions> = {}) {
@@ -88,7 +86,7 @@ export default class DragScroll extends Component {
             return false;
         }
         const {
-            getScrollPosition,
+            getScrollPosition = getDefaultScrollPosition,
         } = this.options;
         const nextPos = getScrollPosition({ scrollContainer, direction });
         const offsetX = nextPos[0] - prevPos[0];
