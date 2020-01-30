@@ -1,0 +1,45 @@
+{
+  "name": "@scena/dragscroll",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./dist/dragscroll.cjs.js",
+  "module": "./dist/dragscroll.esm.js",
+  "sideEffects": false,
+  "types": "declaration/index.d.ts",
+  "scripts": {
+    "start": "rollup -c -w",
+    "build": "rollup -c && npm run declaration && print-sizes ./dist",
+    "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json"
+  },
+  "keywords": [
+    "dragscroll",
+    "drag",
+    "scroll",
+    "moveable"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daybrush/dragscroll.git"
+  },
+  "author": "Daybrush",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/daybrush/dragscroll/issues"
+  },
+  "homepage": "https://github.com/daybrush/dragscroll#readme",
+  "dependencies": {
+    "@egjs/component": "^2.1.2"
+  },
+  "devDependencies": {
+    "@daybrush/builder": "^0.1.2",
+    "@daybrush/jsdoc": "^0.3.7",
+    "@daybrush/release": "^0.2.4",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "daybrush-jsdoc-template": "^1.6.0",
+    "print-sizes": "^0.1.0",
+    "pvu": "^0.3.1",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  }
+}
