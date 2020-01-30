@@ -35,7 +35,7 @@ export default class DragScroll extends Component {
         const {
             container,
             threshold = 0,
-            throttle = 0,
+            throttleTime = 0,
             getScrollPosition = getDefaultScrollPosition,
         } = options;
         const {
@@ -43,7 +43,7 @@ export default class DragScroll extends Component {
             startPos,
         } = this;
         const nowTime = now();
-        const distTime = Math.max(throttle + this.prevTime - nowTime, 0);
+        const distTime = Math.max(throttleTime + this.prevTime - nowTime, 0);
 
         const direction = [0, 0];
 
@@ -99,10 +99,10 @@ export default class DragScroll extends Component {
             inputEvent: e,
         });
 
-        if (throttle) {
+        if (throttleTime) {
             this.timer = window.setTimeout(() => {
                 this.drag(e, options);
-            }, throttle);
+            }, throttleTime);
         }
         return true;
     }
