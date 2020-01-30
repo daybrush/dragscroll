@@ -13,8 +13,9 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
 export default class DragScroll extends Component {
     private startRect: Rect | null = null;
     private prevDirection: number[] | null = null;
+    private startPos: number[] = [];
     private prevPos: number[] = [];
-    public dragStart(container: HTMLElement) {
+    public dragStart(e: any, container: HTMLElement) {
         const {
             top,
             left,
@@ -22,6 +23,7 @@ export default class DragScroll extends Component {
             height,
         } = container.getBoundingClientRect();
 
+        this.startPos = [e.clientX, e.clientY];
         this.startRect = { top, left, width, height };
     }
     public drag(e: any, options: DragScrollOptions) {
@@ -38,19 +40,28 @@ export default class DragScroll extends Component {
         } = options;
         const {
             startRect,
+            startPos,
         } = this;
 
         const direction = [0, 0];
 
         if (startRect.top > clientY - threshold) {
-            direction[1] = -1;
+            if (startPos[1] > startRect.top || clientY < startPos[1]) {
+                direction[1] = -1;
+            }
         } else if (startRect.top + startRect.height < clientY + threshold) {
-            direction[1] = 1;
+            if (startPos[1] < startRect.top + startRect.height || clientY > startPos[1]) {
+                direction[1] = 1;
+            }
         }
         if (startRect.left > clientX - threshold) {
-            direction[0] = -1;
+            if (startPos[0] > startRect.left || clientX < startPos[0]) {
+                direction[0] = -1;
+            }
         } else if (startRect.left + startRect.width < clientX + threshold) {
-            direction[0] = 1;
+            if (startPos[0] < startRect.left + startRect.width || clientX > startPos[0]) {
+                direction[0] = 1;
+            }
         }
         if (!direction[0] && !direction[1]) {
             return false;
