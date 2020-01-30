@@ -15,13 +15,13 @@ export default class DragScroll extends Component {
     private prevDirection: number[] | null = null;
     private startPos: number[] = [];
     private prevPos: number[] = [];
-    public dragStart(e: any, container: HTMLElement) {
+    public dragStart(e: any, options: DragScrollOptions) {
         const {
             top,
             left,
             width,
             height,
-        } = container.getBoundingClientRect();
+        } = options.container.getBoundingClientRect();
 
         this.startPos = [e.clientX, e.clientY];
         this.startRect = { top, left, width, height };
