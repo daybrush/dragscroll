@@ -10,3 +10,18 @@ export interface Rect {
     width: number;
     height: number;
 }
+
+export interface OnScroll {
+    container: HTMLElement;
+    direction: number[];
+    inputEvent: any;
+}
+export interface OnMove {
+    offsetX: number;
+    offsetY: number;
+    inputEvent: any;
+}
+export interface DragScrollEvents {
+    scroll: OnScroll;
+    move: OnMove;
+}

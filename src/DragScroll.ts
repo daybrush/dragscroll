@@ -1,6 +1,6 @@
-import Component from "@egjs/component";
+import EventEmitter from "@scena/event-emitter";
 import { now } from "@daybrush/utils";
-import { DragScrollOptions, Rect } from "./types";
+import { DragScrollEvents, DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
     const container = e.container;
@@ -11,7 +11,7 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
     ];
 }
 
-export default class DragScroll extends Component {
+export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private startRect: Rect | null = null;
     private startPos: number[] = [];
     private prevTime: number = 0;
