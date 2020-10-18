@@ -1,6 +1,6 @@
 {
   "name": "@scena/dragscroll",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "main": "./dist/dragscroll.cjs.js",
   "module": "./dist/dragscroll.esm.js",
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/daybrush/dragscroll#readme",
   "dependencies": {
-    "@scena/event-emitter": "^1.0.1"
+    "@scena/event-emitter": "^1.0.2"
   },
   "devDependencies": {
     "@daybrush/builder": "^0.1.2",
