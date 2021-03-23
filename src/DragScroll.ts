@@ -17,12 +17,23 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private prevTime: number = 0;
     private timer: number = 0;
     public dragStart(e: any, options: DragScrollOptions) {
-        const {
-            top,
-            left,
-            width,
-            height,
-        } = options.container.getBoundingClientRect();
+        const container = options.container;
+        let top = 0;
+        let left = 0;
+        let width = 0;
+        let height = 0;
+
+        if (container === document.body) {
+            width = window.innerWidth;
+            height = window.innerHeight;
+        } else {
+            const rect = container.getBoundingClientRect();
+
+            top = rect.top;
+            left = rect.left;
+            width = rect.width;
+            height = rect.height;
+        }
 
         this.startPos = [e.clientX, e.clientY];
         this.startRect = { top, left, width, height };
