@@ -3,8 +3,14 @@ import { now } from "@daybrush/utils";
 import { DragScrollEvents, DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
-    const container = e.container;
+    let container = e.container;
 
+    if (container === document.body) {
+        return [
+            container.scrollLeft || document.documentElement.scrollLeft,
+            container.scrollTop || document.documentElement.scrollTop,
+        ];
+    }
     return [
         container.scrollLeft,
         container.scrollTop,
