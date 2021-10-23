@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/daybrush/dragscroll#readme",
   "dependencies": {
+    "@daybrush/utils": "1.6.0",
     "@scena/event-emitter": "^1.0.2"
   },
   "devDependencies": {
