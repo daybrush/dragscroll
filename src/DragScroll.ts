@@ -1,6 +1,6 @@
 import EventEmitter from "@scena/event-emitter";
 import { now } from "@daybrush/utils";
-import { DragScrollEvents, DragScrollOptions, Rect } from "./types";
+import { CheckScrollOptions, DragScrollEvents, DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
     let container = e.container;
@@ -18,10 +18,11 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
 }
 
 export default class DragScroll extends EventEmitter<DragScrollEvents> {
-    private startRect: Rect | null = null;
-    private startPos: number[] = [];
-    private prevTime: number = 0;
-    private timer: number = 0;
+    private _startRect: Rect | null = null;
+    private _startPos: number[] = [];
+    private _prevTime: number = 0;
+    private _timer: number = 0;
+    private _prevScrollPos: number[] = [0, 0];
     public dragStart(e: any, options: DragScrollOptions) {
         const container = options.container;
         let top = 0;
@@ -41,8 +42,9 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             height = rect.height;
         }
 
-        this.startPos = [e.clientX, e.clientY];
-        this.startRect = { top, left, width, height };
+        this._startPos = [e.clientX, e.clientY];
+        this._startRect = { top, left, width, height };
+        this._prevScrollPos = this._getScrollPosition([0, 0], options);
     }
     public drag(e: any, options: DragScrollOptions) {
         const {
@@ -53,77 +55,124 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             container,
             threshold = 0,
             throttleTime = 0,
-            getScrollPosition = getDefaultScrollPosition,
+            useScroll,
         } = options;
         const {
-            startRect,
-            startPos,
+            _startRect,
+            _startPos,
         } = this;
-        const nowTime = now();
-        const distTime = Math.max(throttleTime + this.prevTime - nowTime, 0);
 
         const direction = [0, 0];
 
-        if (startRect.top > clientY - threshold) {
-            if (startPos[1] > startRect.top || clientY < startPos[1]) {
+        if (_startRect.top > clientY - threshold) {
+            if (_startPos[1] > _startRect.top || clientY < _startPos[1]) {
                 direction[1] = -1;
             }
-        } else if (startRect.top + startRect.height < clientY + threshold) {
-            if (startPos[1] < startRect.top + startRect.height || clientY > startPos[1]) {
+        } else if (_startRect.top + _startRect.height < clientY + threshold) {
+            if (_startPos[1] < _startRect.top + _startRect.height || clientY > _startPos[1]) {
                 direction[1] = 1;
             }
         }
-        if (startRect.left > clientX - threshold) {
-            if (startPos[0] > startRect.left || clientX < startPos[0]) {
+        if (_startRect.left > clientX - threshold) {
+            if (_startPos[0] > _startRect.left || clientX < _startPos[0]) {
                 direction[0] = -1;
             }
-        } else if (startRect.left + startRect.width < clientX + threshold) {
-            if (startPos[0] < startRect.left + startRect.width || clientX > startPos[0]) {
+        } else if (_startRect.left + _startRect.width < clientX + threshold) {
+            if (_startPos[0] < _startRect.left + _startRect.width || clientX > _startPos[0]) {
                 direction[0] = 1;
             }
         }
-        clearTimeout(this.timer);
+        clearTimeout(this._timer);
 
         if (!direction[0] && !direction[1]) {
             return false;
         }
-        if (distTime > 0) {
-            this.timer = window.setTimeout(() => {
-                this.drag(e, options);
-            }, distTime);
-
-            return false;
-        }
-        this.prevTime = nowTime;
-        const prevPos = getScrollPosition({ container, direction });
-
-        this.trigger("scroll", {
-            container,
+        return this._continueDrag({
+            ...options,
             direction,
             inputEvent: e,
         });
 
-        const nextPos = getScrollPosition({ container, direction });
-        const offsetX = nextPos[0] - prevPos[0];
-        const offsetY = nextPos[1] - prevPos[1];
+
+    }
+    public checkScroll(options: CheckScrollOptions) {
+        const {
+            prevScrollPos = this._prevScrollPos,
+            direction,
+            throttleTime = 0,
+            inputEvent,
+            isDrag,
+        } = options;
+        const nextScrollPos = this._getScrollPosition(direction || [0, 0], options);
+        const offsetX = nextScrollPos[0] - prevScrollPos[0];
+        const offsetY = nextScrollPos[1] - prevScrollPos[1];
+
+        const nextDirection = direction || [
+            offsetX ? Math.abs(offsetX) / offsetX : 0,
+            offsetY ? Math.abs(offsetY) / offsetY : 0,
+        ];
+        this._prevScrollPos = nextScrollPos;
 
         if (!offsetX && !offsetY) {
             return false;
         }
         this.trigger("move", {
-            offsetX: direction[0] ? offsetX : 0,
-            offsetY: direction[1] ? offsetY : 0,
-            inputEvent: e,
+            offsetX: nextDirection[0] ? offsetX : 0,
+            offsetY: nextDirection[1] ? offsetY : 0,
+            inputEvent,
         });
 
-        if (throttleTime) {
-            this.timer = window.setTimeout(() => {
-                this.drag(e, options);
+        if (throttleTime && isDrag) {
+            this._timer = window.setTimeout(() => {
+                this._continueDrag(options);
             }, throttleTime);
         }
         return true;
     }
     public dragEnd() {
-        clearTimeout(this.timer);
+        clearTimeout(this._timer);
+    }
+    private _getScrollPosition(direction: number[], options: DragScrollOptions) {
+        const {
+            container,
+            getScrollPosition = getDefaultScrollPosition,
+        } = options;
+        return getScrollPosition({ container, direction });
+    }
+    private _continueDrag(options: CheckScrollOptions) {
+        const {
+            container,
+            direction,
+            throttleTime,
+            useScroll,
+            inputEvent,
+        } = options;
+        const nowTime = now();
+        const distTime = Math.max(throttleTime + this._prevTime - nowTime, 0);
+
+        if (distTime > 0) {
+            this._timer = window.setTimeout(() => {
+                this._continueDrag(options);
+            }, distTime);
+
+            return false;
+        }
+
+        this._prevTime = nowTime;
+        const prevScrollPos = this._getScrollPosition(direction, options);
+
+        this._prevScrollPos = prevScrollPos;
+        this.trigger("scroll", {
+            container,
+            direction,
+            inputEvent,
+        });
+
+        return useScroll || this.checkScroll({
+            ...options,
+            prevScrollPos,
+            direction,
+            inputEvent,
+        });
     }
 }

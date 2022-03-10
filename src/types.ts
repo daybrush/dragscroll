@@ -3,6 +3,13 @@ export interface DragScrollOptions {
     threshold?: number;
     getScrollPosition?: (param: { container: HTMLElement, direction: number[] }) => number[];
     throttleTime?: number;
+    useScroll?: boolean;
+}
+export interface CheckScrollOptions extends DragScrollOptions {
+    isDrag?: boolean;
+    inputEvent?: any;
+    prevScrollPos?: number[];
+    direction?: number[];
 }
 export interface Rect {
     left: number;

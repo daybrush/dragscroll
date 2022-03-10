@@ -1,6 +1,6 @@
 {
   "name": "@scena/dragscroll",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "",
   "main": "./dist/dragscroll.cjs.js",
   "module": "./dist/dragscroll.esm.js",
@@ -14,7 +14,8 @@
     "release": "npm run build && release --dirs=dist",
     "release:init": "npm run build && release -i --dirs=dist",
     "deploy": "gh-pages -d ./demo --dest=./ --add --remote origin",
-    "deploy:init": "gh-pages -d ./demo --dest=./ --remote origin"
+    "deploy:init": "gh-pages -d ./demo --dest=./ --remote origin",
+    "test:local": "npm run build && pvu --path=./ --distUpdate=../selecto --distPaths=declaration,dist"
   },
   "keywords": [
     "dragscroll",
@@ -44,7 +45,7 @@
     "@types/react-dom": "^16.9.4",
     "daybrush-jsdoc-template": "^1.6.0",
     "print-sizes": "^0.1.0",
-    "pvu": "^0.3.1",
+    "pvu": "^0.6.1",
     "tslint": "^5.20.1",
     "typescript": "^3.7.4"
   }
