@@ -52,10 +52,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             clientY,
         } = e;
         const {
-            container,
             threshold = 0,
-            throttleTime = 0,
-            useScroll,
         } = options;
         const {
             _startRect,
@@ -91,6 +88,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             ...options,
             direction,
             inputEvent: e,
+            isDrag: true,
         });
 
 
