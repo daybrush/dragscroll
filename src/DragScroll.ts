@@ -23,6 +23,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private _prevTime: number = 0;
     private _timer: number = 0;
     private _prevScrollPos: number[] = [0, 0];
+    private _isWait = false;
     public dragStart(e: any, options: DragScrollOptions) {
         const container = options.container;
         let top = 0;
@@ -90,10 +91,11 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             inputEvent: e,
             isDrag: true,
         });
-
-
     }
     public checkScroll(options: CheckScrollOptions) {
+        if (this._isWait) {
+            return false;
+        }
         const {
             prevScrollPos = this._prevScrollPos,
             direction,
@@ -143,8 +145,13 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             direction,
             throttleTime,
             useScroll,
+            isDrag,
             inputEvent,
         } = options;
+
+        if (isDrag && this._isWait) {
+            return;
+        }
         const nowTime = now();
         const distTime = Math.max(throttleTime + this._prevTime - nowTime, 0);
 
@@ -160,12 +167,17 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         const prevScrollPos = this._getScrollPosition(direction, options);
 
         this._prevScrollPos = prevScrollPos;
+
+        if (isDrag) {
+            this._isWait = true;
+        }
         this.trigger("scroll", {
             container,
             direction,
             inputEvent,
         });
 
+        this._isWait = false;
         return useScroll || this.checkScroll({
             ...options,
             prevScrollPos,
