@@ -1,5 +1,5 @@
 export interface DragScrollOptions {
-    container: HTMLElement;
+    container: (() => HTMLElement) | HTMLElement | { current?: HTMLElement | null } | { value?: HTMLElement | null };
     threshold?: number;
     getScrollPosition?: (param: { container: HTMLElement, direction: number[] }) => number[];
     throttleTime?: number;

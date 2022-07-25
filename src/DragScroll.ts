@@ -1,5 +1,5 @@
 import EventEmitter from "@scena/event-emitter";
-import { now } from "@daybrush/utils";
+import { isFunction, now } from "@daybrush/utils";
 import { CheckScrollOptions, DragScrollEvents, DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
@@ -17,6 +17,19 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
     ];
 }
 
+function getContainerElement(container: DragScrollOptions["container"]) {
+    if (!container) {
+        return null;
+    } else if (isFunction(container)) {
+        return container();
+    } else if (container instanceof Element) {
+        return container;
+    } else if ("current" in container) {
+        return container.current;
+    } else if ("value" in container) {
+        return container.value;
+    }
+}
 export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private _startRect: Rect | null = null;
     private _startPos: number[] = [];
@@ -24,8 +37,15 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private _timer: number = 0;
     private _prevScrollPos: number[] = [0, 0];
     private _isWait = false;
+    private _flag = false;
+
     public dragStart(e: any, options: DragScrollOptions) {
-        const container = options.container;
+        const container = getContainerElement(options.container);
+
+        if (!container) {
+            this._flag = false;
+            return;
+        }
         let top = 0;
         let left = 0;
         let width = 0;
@@ -43,11 +63,15 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             height = rect.height;
         }
 
+        this._flag = true;
         this._startPos = [e.clientX, e.clientY];
         this._startRect = { top, left, width, height };
         this._prevScrollPos = this._getScrollPosition([0, 0], options);
     }
     public drag(e: any, options: DragScrollOptions) {
+        if (!this._flag) {
+            return;
+        }
         const {
             clientX,
             clientY,
@@ -137,7 +161,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             container,
             getScrollPosition = getDefaultScrollPosition,
         } = options;
-        return getScrollPosition({ container, direction });
+        return getScrollPosition({ container: getContainerElement(container), direction });
     }
     private _continueDrag(options: CheckScrollOptions) {
         const {
@@ -172,7 +196,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             this._isWait = true;
         }
         this.trigger("scroll", {
-            container,
+            container: getContainerElement(container),
             direction,
             inputEvent,
         });
