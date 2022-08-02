@@ -1,5 +1,5 @@
 import EventEmitter from "@scena/event-emitter";
-import { isFunction, now } from "@daybrush/utils";
+import { isFunction, isString, now } from "@daybrush/utils";
 import { CheckScrollOptions, DragScrollEvents, DragScrollOptions, Rect } from "./types";
 
 function getDefaultScrollPosition(e: { container: HTMLElement, direction: number[] }) {
@@ -17,10 +17,12 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
     ];
 }
 
-function getContainerElement(container: DragScrollOptions["container"]) {
+function getContainerElement(container: DragScrollOptions["container"]): HTMLElement {
     if (!container) {
         return null;
-    } else if (isFunction(container)) {
+    } else if (isString(container)) {
+        return document.querySelector<HTMLElement>(container);
+    } if (isFunction(container)) {
         return container();
     } else if (container instanceof Element) {
         return container;

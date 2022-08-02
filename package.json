@@ -1,6 +1,6 @@
 {
   "name": "@scena/dragscroll",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "./dist/dragscroll.cjs.js",
   "module": "./dist/dragscroll.esm.js",
