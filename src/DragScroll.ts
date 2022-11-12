@@ -212,14 +212,16 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
         if (isDrag) {
             this._isWait = true;
         }
-        /**
-         * @event DragScroll#scroll
-         */
-        this.trigger("scroll", {
+        const param = {
             container: getContainerElement(container),
             direction,
             inputEvent,
-        });
+        };
+        options.requestScroll?.(param);
+        /**
+         * @event DragScroll#scroll
+         */
+        this.trigger("scroll", param);
 
         this._isWait = false;
         return useScroll || this.checkScroll({

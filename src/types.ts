@@ -17,6 +17,12 @@ export interface DragScrollOptions {
      */
     getScrollPosition?: (param: { container: HTMLElement, direction: number[] }) => number[];
     /**
+     * Request if there is a need to be scrolled through drag.
+     * Only use one of the scroll event or requestScroll options.
+     * @default null
+     */
+    requestScroll?: ((param: OnScroll) => void) | null;
+    /**
      * How often to re-scroll when the drag stays at the start or end.
      * If 0, it does not occur.
      * @default 0
