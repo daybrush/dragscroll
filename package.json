@@ -11,7 +11,7 @@
     "build": "rollup -c && npm run declaration && print-sizes ./dist",
     "doc": "rm -rf ./doc && jsdoc -c jsdoc.json",
     "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json",
-    "prerelease": "npm run build && && npm run doc && prerelease --dirs=dist,doc",
+    "prerelease": "npm run build && npm run doc && prerelease --dirs=dist,doc",
     "release": "npm run build && npm run doc && release --dirs=dist,doc",
     "release:init": "npm run build && npm run doc && release -i --dirs=dist,doc",
     "deploy": "gh-pages -d ./demo --dest=./ --add --remote origin",
