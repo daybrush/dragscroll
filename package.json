@@ -1,6 +1,6 @@
 {
   "name": "@scena/dragscroll",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "",
   "main": "./dist/dragscroll.cjs.js",
   "module": "./dist/dragscroll.esm.js",
@@ -9,10 +9,11 @@
   "scripts": {
     "start": "rollup -c -w",
     "build": "rollup -c && npm run declaration && print-sizes ./dist",
+    "doc": "rm -rf ./doc && jsdoc -c jsdoc.json",
     "declaration": "rm -rf declaration && tsc -p tsconfig.declaration.json",
-    "prerelease": "npm run build && prerelease --dirs=dist",
-    "release": "npm run build && release --dirs=dist",
-    "release:init": "npm run build && release -i --dirs=dist",
+    "prerelease": "npm run build && && npm run doc && prerelease --dirs=dist,doc",
+    "release": "npm run build && npm run doc && release --dirs=dist,doc",
+    "release:init": "npm run build && npm run doc && release -i --dirs=dist,doc",
     "deploy": "gh-pages -d ./demo --dest=./ --add --remote origin",
     "deploy:init": "gh-pages -d ./demo --dest=./ --remote origin",
     "test:local": "npm run build && pvu --path=./ --distUpdate=../selecto --distPaths=declaration,dist"
@@ -39,7 +40,7 @@
   },
   "devDependencies": {
     "@daybrush/builder": "^0.1.2",
-    "@daybrush/jsdoc": "^0.3.7",
+    "@daybrush/jsdoc": "^0.4.3",
     "@daybrush/release": "^0.2.4",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",

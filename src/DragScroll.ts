@@ -32,7 +32,11 @@ function getContainerElement(container: DragScrollOptions["container"]): HTMLEle
         return container.value;
     }
 }
-export default class DragScroll extends EventEmitter<DragScrollEvents> {
+
+/**
+ * @sort 1
+ */
+class DragScroll extends EventEmitter<DragScrollEvents> {
     private _startRect: Rect | null = null;
     private _startPos: number[] = [];
     private _prevTime: number = 0;
@@ -40,7 +44,8 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
     private _prevScrollPos: number[] = [0, 0];
     private _isWait = false;
     private _flag = false;
-
+    /**
+     */
     public dragStart(e: any, options: DragScrollOptions) {
         const container = getContainerElement(options.container);
 
@@ -71,6 +76,7 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         this._prevScrollPos = this._getScrollPosition([0, 0], options);
     }
     public drag(e: any, options: DragScrollOptions) {
+        clearTimeout(this._timer);
         if (!this._flag) {
             return;
         }
@@ -106,7 +112,6 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
                 direction[0] = 1;
             }
         }
-        clearTimeout(this._timer);
 
         if (!direction[0] && !direction[1]) {
             return false;
@@ -118,6 +123,8 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             isDrag: true,
         });
     }
+    /**
+     */
     public checkScroll(options: CheckScrollOptions) {
         if (this._isWait) {
             return false;
@@ -142,6 +149,9 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         if (!offsetX && !offsetY) {
             return false;
         }
+        /**
+         * @event DragScroll#move
+         */
         this.trigger("move", {
             offsetX: nextDirection[0] ? offsetX : 0,
             offsetY: nextDirection[1] ? offsetY : 0,
@@ -149,13 +159,17 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         });
 
         if (throttleTime && isDrag) {
+            clearTimeout(this._timer);
             this._timer = window.setTimeout(() => {
                 this._continueDrag(options);
             }, throttleTime);
         }
         return true;
     }
+    /**
+     */
     public dragEnd() {
+        this._flag = false;
         clearTimeout(this._timer);
     }
     private _getScrollPosition(direction: number[], options: DragScrollOptions) {
@@ -175,13 +189,14 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
             inputEvent,
         } = options;
 
-        if (isDrag && this._isWait) {
+        if (!this._flag || (isDrag && this._isWait)) {
             return;
         }
         const nowTime = now();
         const distTime = Math.max(throttleTime + this._prevTime - nowTime, 0);
 
         if (distTime > 0) {
+            clearTimeout(this._timer);
             this._timer = window.setTimeout(() => {
                 this._continueDrag(options);
             }, distTime);
@@ -197,6 +212,9 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         if (isDrag) {
             this._isWait = true;
         }
+        /**
+         * @event DragScroll#scroll
+         */
         this.trigger("scroll", {
             container: getContainerElement(container),
             direction,
@@ -212,3 +230,5 @@ export default class DragScroll extends EventEmitter<DragScrollEvents> {
         });
     }
 }
+
+export default DragScroll;
