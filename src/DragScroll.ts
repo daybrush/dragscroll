@@ -17,6 +17,14 @@ function getDefaultScrollPosition(e: { container: HTMLElement, direction: number
     ];
 }
 
+function checkDefaultScrollEvent(container: HTMLElement | Window, callback: () => void) {
+    container.addEventListener("scroll", callback);
+
+    return () => {
+        container.removeEventListener("scroll", callback);
+    }
+}
+
 function getContainerElement(container: DragScrollOptions["container"]): HTMLElement {
     if (!container) {
         return null;
@@ -44,6 +52,9 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
     private _prevScrollPos: number[] = [0, 0];
     private _isWait = false;
     private _flag = false;
+    private _currentOptions: DragScrollOptions | null = null;
+    private _lock = false;
+    private _unregister: (() => void) | null = null;
     /**
      */
     public dragStart(e: any, options: DragScrollOptions) {
@@ -74,6 +85,8 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
         this._startPos = [e.clientX, e.clientY];
         this._startRect = { top, left, width, height };
         this._prevScrollPos = this._getScrollPosition([0, 0], options);
+        this._currentOptions = options;
+        this._registerScrollEvent(options);
     }
     public drag(e: any, options: DragScrollOptions) {
         clearTimeout(this._timer);
@@ -92,6 +105,8 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
             _startPos,
         } = this;
 
+
+        this._currentOptions = options;
         const direction = [0, 0];
 
         if (_startRect.top > clientY - threshold) {
@@ -145,6 +160,7 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
             offsetY ? Math.abs(offsetY) / offsetY : 0,
         ];
         this._prevScrollPos = nextScrollPos;
+        this._lock = false;
 
         if (!offsetX && !offsetY) {
             return false;
@@ -152,7 +168,7 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
         /**
          * @event DragScroll#move
          */
-        this.trigger("move", {
+        this.emit("move", {
             offsetX: nextDirection[0] ? offsetX : 0,
             offsetY: nextDirection[1] ? offsetY : 0,
             inputEvent,
@@ -167,10 +183,13 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
         return true;
     }
     /**
+     *
      */
     public dragEnd() {
         this._flag = false;
+        this._lock = false;
         clearTimeout(this._timer);
+        this._unregisterScrollEvent();
     }
     private _getScrollPosition(direction: number[], options: DragScrollOptions) {
         const {
@@ -203,7 +222,6 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
 
             return false;
         }
-
         this._prevTime = nowTime;
         const prevScrollPos = this._getScrollPosition(direction, options);
 
@@ -211,6 +229,11 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
 
         if (isDrag) {
             this._isWait = true;
+        }
+
+        // unregister native scroll event
+        if (!useScroll) {
+            this._lock = true;
         }
         const param = {
             container: getContainerElement(container),
@@ -221,7 +244,7 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
         /**
          * @event DragScroll#scroll
          */
-        this.trigger("scroll", param);
+        this.emit("scroll", param);
 
         this._isWait = false;
         return useScroll || this.checkScroll({
@@ -231,6 +254,43 @@ class DragScroll extends EventEmitter<DragScrollEvents> {
             inputEvent,
         });
     }
+
+    private _registerScrollEvent(options: DragScrollOptions) {
+        this._unregisterScrollEvent();
+        const checkScrollEvent = options.checkScrollEvent;
+
+        if (!checkScrollEvent) {
+            return;
+        }
+        const callback = checkScrollEvent === true ? checkDefaultScrollEvent : checkScrollEvent;
+        const container = getContainerElement(options.container);
+
+        if (checkScrollEvent === true && (container === document.body || container === document.documentElement)) {
+            this._unregister = checkDefaultScrollEvent(window, this._onScroll);
+        } else {
+            this._unregister = callback(container, this._onScroll);
+        }
+    }
+    private _unregisterScrollEvent() {
+        this._unregister?.();
+        this._unregister = null;
+    }
+
+    private _onScroll = () => {
+        const options = this._currentOptions;
+        if (this._lock || !options) {
+            return;
+        }
+
+        this.emit("scrollDrag", {
+            next: (inputEvent: any) => {
+                this.checkScroll({
+                    container: options.container,
+                    inputEvent,
+                });
+            },
+        });
+    };
 }
 
 export default DragScroll;

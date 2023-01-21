@@ -34,6 +34,12 @@ export interface DragScrollOptions {
      * @default false
      */
     useScroll?: boolean;
+    /**
+     * Dragging occurs via native scrolling.
+     * If set to true, native scroll events can be registered/unregistered.
+     * If you want to add it manually, set the return event unregisteration function to the event registration function.
+     */
+    checkScrollEvent?: boolean | ((container: HTMLElement, callback: () => void) => () => void)
 }
 /**
  * @typedef
@@ -61,6 +67,7 @@ export interface OnScroll {
     direction: number[];
     inputEvent: any;
 }
+
 /**
  * @typedef
  */
@@ -73,7 +80,14 @@ export interface OnMove {
 /**
  * @typedef
  */
+export interface OnScrollDrag {
+    next(inputEvent: any);
+}
+/**
+ * @typedef
+ */
 export interface DragScrollEvents {
     scroll: OnScroll;
     move: OnMove;
+    scrollDrag: OnScrollDrag;
 }
